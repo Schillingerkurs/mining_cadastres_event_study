@@ -24,15 +24,25 @@ gc()
 
 colnames(df)
 
+unique(df$pol_cor_quantile)
 
 
+df$mining_aid_spend[is.na(df$mining_aid_spend)] <- 0
 
 
 model_high_corruption  = feols(tot_res_rev_dummy ~ mining_aid_spend + sunab(first_year_aid_treatment, year) | iso3 + year, df %>% filter(pol_cor_quantile == "high") )
-model_low_corruption  = feols(tot_res_rev_dummy ~ mining_aid_spend + sunab(first_year_aid_treatment, year) | iso3 + year, df %>% filter(pol_cor_quantile == "middle_high"))
+model_middle_high_corruption  = feols(tot_res_rev_dummy ~ mining_aid_spend + sunab(first_year_aid_treatment, year) | iso3 + year, df %>% filter(pol_cor_quantile == "middle_high"))
+model_middle_low_corruption  = feols(tot_res_rev_dummy ~ mining_aid_spend + sunab(first_year_aid_treatment, year) | iso3 + year, df %>% filter(pol_cor_quantile == "middle_low"))
+                                      
+model_low_corruption  = feols(tot_res_rev_dummy ~ mining_aid_spend + sunab(first_year_aid_treatment, year) | iso3 + year, df %>% filter(pol_cor_quantile == "low"))
+
+
+
 
 ggiplot(list( "High corruption" = model_high_corruption ,
-              "Low corruption" = model_low_corruption),
+              "Middle high corruption" = model_middle_high_corruption,
+          "Middle low corruption" = model_middle_high_corruption,
+          "Low corruption" = model_low_corruption),
         
         main = "Dummy resource revenue")
 
@@ -40,7 +50,7 @@ ggiplot(list( "High corruption" = model_high_corruption ,
 
 
 
-  coeftable_high_corruption <- data.frame(model_high_corruption$coeftable)
+  coeftable_high_corruption <- data.frame(model_low_corruption$coeftable)
        
        
        

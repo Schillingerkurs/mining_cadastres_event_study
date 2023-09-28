@@ -80,27 +80,72 @@ def set_pol_corruption_quantiles(panel):
     
     return panel
     
+
+def set_resource_reporting_dummy(panel):
+    """
     
-def main(HERE):  
+    Label columns R confirm
     
-    final = (pd.read_parquet(HERE/"data"/"interim"/"panel.parquet")
-             .pipe(get_first_year_aid_treatment)
-              .pipe(set_pol_corruption_quantiles)
-              .rename(columns = {'Total Resource Revenue':'tot_res_rev',
+    
+    Set dummy to 1 if the country reports resource revenues in a given year
+    according to the GRD dataset
+    
+    """
+    panel = (panel.rename(columns = {'Total Resource Revenue':'tot_res_rev',
                                  'Resource Taxes':'res_tax',
                                  }) 
              )
     
     
-    final.loc[final['tot_res_rev'].isna() == True, "tot_res_rev_dummy"] = 0    
-    final["tot_res_rev_dummy"] = final["tot_res_rev_dummy"].fillna(1)
+    panel.loc[panel['tot_res_rev'].isna() == True, "tot_res_rev_dummy"] = 0    
+    panel["tot_res_rev_dummy"] = panel["tot_res_rev_dummy"].fillna(1)
+    
+    return panel
+    
+
+
+def select_relevant_countries(panel):
+    """
+    Only countries with somewhat similiar corruption / state capacity levels 
+    can be compared. Non-corrupt and or rich countries do not get a mining register.
+
+    """
+      
+    gni_treshold = 5000
+    
+    base_year = 2022
+
+    iso3_below5000_2022 =  set(panel
+             .query(f"year == {base_year}")
+             .query(f"GNI_per_capita < {gni_treshold}")
+             .reset_index()
+            ['iso3']
+             )
+  
+    print( len(iso3_below5000_2022), "countries have a GNI below", gni_treshold, " in", base_year)
     
     
+    return  panel.query("iso3 in @ iso3_below5000_2022")
+     
+                                
+
+
+
+
     
+def main(HERE):  
     
+    panel = (pd.read_parquet(HERE/"data"/"interim"/"panel.parquet")
+             .pipe(get_first_year_aid_treatment)
+             .pipe(select_relevant_countries)
+             .pipe(set_pol_corruption_quantiles)
+             .pipe(set_resource_reporting_dummy)
+               
+               )
+              
+             
     
-    
-    write_rData(Path(HERE),final, 'country_panel_mining_aid')
+    write_rData(Path(HERE),panel, 'country_panel_mining_aid')
 
 
 
