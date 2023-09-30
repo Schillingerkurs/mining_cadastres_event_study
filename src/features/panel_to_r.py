@@ -21,7 +21,7 @@ from write_rData import write_rData
 
 
 
-def get_first_year_aid_treatment(panel):
+def get_first_year_aid_treatment(panel =  pd.DataFrame()) -> pd.DataFrame():
     """
     get first year of treatment
     """
@@ -45,8 +45,9 @@ def get_first_year_aid_treatment(panel):
 
 
 
-
-def set_pol_corruption_quantiles(panel):
+def set_pol_corruption_quantiles(panel =  pd.DataFrame(),
+                                 quantile_group = [.25,.5,.75]
+                                 ) -> pd.DataFrame():
     
     """ 
     Group every country into quanitles per year based on the 
@@ -61,7 +62,7 @@ def set_pol_corruption_quantiles(panel):
     for y in set(panel.reset_index()['year']):
         panel_y = panel.query(f"year == {y}")
         
-        for number,i in enumerate([.25,.5,.75]):
+        for number,i in enumerate(quantile_group):
             current_  = panel_y['Pol_corruption_v_dem'].quantile(i)
             panel_y.loc[panel_y['Pol_corruption_v_dem'] > current_, "pol_cor_quantile" ] = number +1
          
@@ -71,17 +72,11 @@ def set_pol_corruption_quantiles(panel):
         
     panel = pd.concat(frames).reset_index().drop_duplicates()
     
-    panel['pol_cor_quantile'] = panel['pol_cor_quantile'].map(
-        {0.0: "low",
-         1.0: "middle_low",
-         2.0: "middle_high",
-         3.0: "high"
-         })
     
     return panel
     
 
-def set_resource_reporting_dummy(panel):
+def set_resource_reporting_dummy(panel =  pd.DataFrame()) -> pd.DataFrame():
     """
     
     Label columns R confirm
@@ -104,7 +99,7 @@ def set_resource_reporting_dummy(panel):
     
 
 
-def select_relevant_countries(panel):
+def select_relevant_countries(panel =  pd.DataFrame()) -> pd.DataFrame():
     """
     Only countries with somewhat similiar corruption / state capacity levels 
     can be compared. Non-corrupt and or rich countries do not get a mining register.
@@ -138,10 +133,21 @@ def main(HERE):
     panel = (pd.read_parquet(HERE/"data"/"interim"/"panel.parquet")
              .pipe(get_first_year_aid_treatment)
              .pipe(select_relevant_countries)
-             .pipe(set_pol_corruption_quantiles)
+             .pipe(set_pol_corruption_quantiles,  quantile_group = [.5])
              .pipe(set_resource_reporting_dummy)
                
                )
+    
+    
+    print(panel.pol_cor_quantile.value_counts())
+    
+    
+    panel['pol_cor_quantile'] = panel['pol_cor_quantile'].map(
+        {0.0: "low",
+          # 1.0: "middle_low",
+          # 2.0: "middle_high",
+           1.0: "high"
+          })
               
              
     
