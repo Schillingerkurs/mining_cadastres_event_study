@@ -1,7 +1,7 @@
 mining_cadastres_event_study
 ==============================
 
-How does the administrative capacity building in the mining sector affect its contribution to fiscal capacity? This repo examines with event study how mining cadastre reforms in different countries relate to the liklihood that countries publish their resource revenues and taxes. The underlying data origns from International Aid Transparency Initiative (IATI) database and the UNU-Wider Government Revenue Data set.
+How does the administrative capacity building in the mining sector affect its contribution to fiscal capacity? This repo examines with an event study disgn how mining cadastre reforms in different countries relate to the liklihood that countries publish their resource revenues and taxes. The underlying data origns from International Aid Transparency Initiative (IATI) database and the UNU-Wider Government Revenue Data set.
 
 Project Organization
 ------------
