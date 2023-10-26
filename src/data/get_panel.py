@@ -17,6 +17,8 @@ from get_v_dem import get_v_dem
 from get_GNI_score import get_GNI_score
 
 
+from get_mineral_and_fossil_exports import get_mineral_and_fossil_exports
+
 def select_v_dem(HERE, 
                  df,
                  rel_vars = { "v2x_corr": "Pol_corruption_v_dem",
@@ -45,6 +47,8 @@ def select_v_dem(HERE,
              )
     
     
+
+
 
 
 def main(HERE):
@@ -109,12 +113,20 @@ def main(HERE):
           )
     
     
-    gni_scroe = get_GNI_score(HERE, df)
+    gni_scroe = get_GNI_score(df)
+
+
+    commodity_exports = get_mineral_and_fossil_exports(df)
     
     
     
     out = (df
           .merge(gni_scroe,
+                 left_index = True,
+                 right_index = True,
+                 how = "left",
+                 validate = "1:1")
+          .merge(commodity_exports,
                  left_index = True,
                  right_index = True,
                  how = "left",
@@ -127,7 +139,6 @@ def main(HERE):
                   
             
           )
-    
     
     out.to_parquet(HERE/"data"/"interim"/"panel.parquet")
     print("\n","*"* 10 ," \n Panel done \n","*"* 10 )

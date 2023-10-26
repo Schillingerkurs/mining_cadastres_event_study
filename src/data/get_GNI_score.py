@@ -6,38 +6,16 @@ Created on Wed Sep 27 15:17:56 2023
 """
 
 
-import geopandas as gpd
+
 from tqdm import tqdm
 import pandas as pd
-from pandas_datareader import wb
 
 
-def load_wb_figures(iso3, time_series, var_access):
-    
-     """ 
-     Uses the datreader API to fetch world bank indicator
-    
-     for indicator list: 
-     REF: https://data.worldbank.org/
-    
-#     """
+from load_wb_data import load_wb_data
 
-     g = list(var_access.keys())[0]
-     fdi_wb = (wb
-                .download(iso3, g, start =     
-                          min(time_series),
-                          end = max(time_series))
-                .reset_index()
-              .rename(columns= var_access)
-              .assign(iso3 = iso3)
-              .drop(columns = ["country"])
-              .assign(year = lambda x: x[ "year"].astype(int))
-              .set_index( ["iso3", "year"])
-              )
-     
-     return fdi_wb
 
-def get_GNI_score(iso3_list, df):
+
+def get_GNI_score(df):
     
     """
     #  Select wealth level of  a country based on its GNI per capita  in a given year.
@@ -66,16 +44,19 @@ def get_GNI_score(iso3_list, df):
         raise ValueError("The start year needs the beofore the end year")
     
 
-    # fetch all iso3 coutnrie from the geopandas naturalearth_lowres dataset.
-    all_countries = (gpd
-         .read_file(gpd.datasets.get_path('naturalearth_lowres'))
-         )
+    # # fetch all iso3 coutnrie from the geopandas naturalearth_lowres dataset.
+    # all_countries = (gpd
+    #      .read_file(gpd.datasets.get_path('naturalearth_lowres'))
+    #      )
     
     time_series =range(start,end)   
     frames = []
     for iso3 in tqdm(iso3_list):
         try:
-            frames.append(load_wb_figures(iso3, time_series, var_access = {"NY.GNP.PCAP.CD":"GNI_per_capita"}))
+            
+            wb_data = load_wb_data(iso3, time_series, var_access = {"NY.GNP.PCAP.CD":"GNI_per_capita"})
+        
+            frames.append(wb_data["NY.GNP.PCAP.CD"])
         except ValueError:
             print(f"{iso3} is not in the WB datbase")
               

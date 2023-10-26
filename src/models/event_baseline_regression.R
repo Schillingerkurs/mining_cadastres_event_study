@@ -9,7 +9,7 @@ if(length(new.packages)) install.packages(new.packages)
 library(tidyverse);library(fixest); library(here); library(glue)
 
 
-library(ggiplot)
+#library(ggiplot)
 
 
 load(here("data","interim","country_panel_mining_aid.RData"))
@@ -31,35 +31,22 @@ df$mining_aid_spend[is.na(df$mining_aid_spend)] <- 0
 
 
 model_high_corruption  = feols(tot_res_rev_dummy ~ mining_aid_spend + sunab(first_year_aid_treatment, year) | iso3 + year, df %>% filter(pol_cor_quantile == "high") )
-model_middle_high_corruption  = feols(tot_res_rev_dummy ~ mining_aid_spend + sunab(first_year_aid_treatment, year) | iso3 + year, df %>% filter(pol_cor_quantile == "middle_high"))
-model_middle_low_corruption  = feols(tot_res_rev_dummy ~ mining_aid_spend + sunab(first_year_aid_treatment, year) | iso3 + year, df %>% filter(pol_cor_quantile == "middle_low"))
-                                      
+                             
 model_low_corruption  = feols(tot_res_rev_dummy ~ mining_aid_spend + sunab(first_year_aid_treatment, year) | iso3 + year, df %>% filter(pol_cor_quantile == "low"))
 
 
+#ggiplot(list( "High corruption" = model_high_corruption ,
+#          "Low corruption" = model_low_corruption),
+ #       main = "Dummy resource revenue")
 
 
-ggiplot(list( "High corruption" = model_high_corruption ,
-              "Middle high corruption" = model_middle_high_corruption,
-          "Middle low corruption" = model_middle_high_corruption,
-          "Low corruption" = model_low_corruption),
-        
-        main = "Dummy resource revenue")
-
-
-
-
-
-  coeftable_high_corruption <- data.frame(model_low_corruption$coeftable)
+coeftable_high_corruption <- data.frame(model_high_corruption$coeftable)
        
-       
-       
-coeftable_low_corruption <- data.frame(resourcetaxes_low_corruption$coeftable)
+coeftable_low_corruption <- data.frame(model_low_corruption$coeftable)
 
 
 write.csv(coeftable_high_corruption, file=
-            here("data","interim","coeftables","coeftable_high_corruption.csv"))
+            here("data","interim","coeftable_high_corruption.csv"))
             
-         
 write.csv(coeftable_low_corruption, file=
-            here("data","interim","coeftables","coeftable_low_corruption.csv"))
+            here("data","interim","coeftable_low_corruption.csv"))
